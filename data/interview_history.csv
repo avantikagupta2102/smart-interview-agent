@@ -1,0 +1,67 @@
+date,question,answer,score,feedback
+2026-06-02 16:42:41.457052,"1. Can you walk us through your experience with machine learning projects, and how you've applied AI to real-world problem-solving in your academic or personal endeavors?",in my machine learning projects I have tried to include LLM NLP and the core generative AI,3,"**Evaluation**
+
+1. **Technical Score: 4/10**
+The answer shows some basic knowledge of machine learning terms such as LLM (Large Language Model), NLP (Natural Language Processing), and generative AI. However, it lacks depth and specificity about the projects, the problems tackled, and the results achieved. The answer does not demonstrate a strong understanding of machine learning concepts or their applications.
+
+2. **Communication Score: 2/10**
+The communication is brief and lacks clarity. The answer does not provide a clear narrative of the experience with machine learning projects. It jumps straight into mentioning technologies without explaining how they were applied or what was achieved. The response could be improved by providing a more detailed and structured explanation of the projects and the role of AI in them.
+
+3. **Overall Score: 3/10**
+The overall score reflects the lack of detail in both technical explanation and communication. To improve, the answer should provide specific examples of projects, explain the challenges faced, and describe how machine learning and AI were used to solve real-world problems.
+
+**Strengths:**
+- The answer shows an awareness of current trends in AI and machine learning, such as LLM and generative AI.
+- It indicates an attempt to apply machine learning to projects, even if the details are not well-articulated.
+
+**Weaknesses:**
+- Lack of specificity about the projects and their outcomes.
+- Poor communication that fails to engage the reader or provide a clear understanding of the experience.
+- The answer does not demonstrate a deep understanding of machine learning concepts or their practical applications.
+
+To strengthen the answer, it would be beneficial to provide detailed descriptions of the projects, including the objectives, methodologies used, outcomes, and lessons learned. Additionally, improving the clarity and structure of the communication would make the answer more compelling and informative."
+2026-06-02 16:51:22.816060,1. Can you explain the logic behind your Elevator Lift Control System project and how you optimized floor servicing?," The project includes the concepts of DSD, the major concepts of flip-flops, the multiplexers, the multipliers and demultiplexers to implement the elevator lift control project. It was a hardware project. I optimized floor servicing by the DSD logics.",5,"**Evaluation**
+
+1. **Technical Score: 6/10**
+The respondent mentions several relevant technical concepts, such as DSD, flip-flops, multiplexers, and demultiplexers, which are commonly used in digital electronics and control systems. However, the explanation is brief and lacks detail, making it difficult to fully understand the implementation and optimization of the Elevator Lift Control System.
+
+2. **Communication Score: 4/10**
+The response is concise, but it lacks clarity and coherence. The respondent assumes that the interviewer is familiar with the technical concepts and abbreviations (e.g., DSD) without providing a clear explanation. The answer could be improved with a more detailed and structured explanation of the project and its optimization.
+
+3. **Overall Score: 5/10**
+The response demonstrates some technical knowledge, but it falls short in terms of communication and clarity. To improve, the respondent should provide more context, explain technical concepts in simpler terms, and offer a more detailed explanation of the project and its optimization.
+
+**Strengths:**
+
+* Familiarity with relevant technical concepts (DSD, flip-flops, multiplexers, demultiplexers)
+* Attempt to address the question and provide some technical information
+
+**Weaknesses:**
+
+* Lack of clarity and coherence in the explanation
+* Insufficient detail about the project implementation and optimization
+* Assuming familiarity with technical concepts and abbreviations without explanation
+* Concise response that could be expanded to provide more context and information."
+2026-06-02 16:53:44.519292,1. Can you explain the logical model you designed for the Elevator Lift Control System and how you implemented efficient decision-making using conditional logic?," In my project, I included logics of flip-flops, decoders, encoders and multiplexers to decide the conditional logic.",5,"**Evaluation**
+
+1. **Technical Score: 6/10**
+The answer demonstrates some understanding of digital logic components, such as flip-flops, decoders, encoders, and multiplexers, which are relevant to the Elevator Lift Control System. However, the answer lacks specificity and depth in explaining how these components are used to implement efficient decision-making using conditional logic. A more detailed explanation of the logical model and its implementation would have scored higher.
+
+2. **Communication Score: 4/10**
+The answer is brief and lacks clarity in conveying the design and implementation of the logical model. The response could be improved by providing a more detailed and structured explanation, using proper technical terminology, and including examples or diagrams to illustrate the concepts.
+
+3. **Overall Score: 5/10**
+The answer demonstrates some technical knowledge, but the lack of clarity and specificity in the explanation hinders effective communication. To improve, the respondent should focus on providing a more detailed and well-structured explanation of the logical model and its implementation.
+
+**Strengths:**
+
+* Demonstrates some knowledge of digital logic components relevant to the Elevator Lift Control System.
+* Attempts to address the question, showing some understanding of the topic.
+
+**Weaknesses:**
+
+* Lacks specificity and depth in explaining the logical model and its implementation.
+* Fails to provide a clear and structured explanation, making it difficult to understand the design and implementation.
+* Does not include examples, diagrams, or technical terminology to support the explanation.
+
+To improve, the respondent should focus on providing a more detailed and well-structured explanation, using proper technical terminology, and including examples or diagrams to illustrate the concepts. This would help to increase the technical score, communication score, and overall score."

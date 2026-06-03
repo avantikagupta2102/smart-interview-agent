@@ -9,6 +9,28 @@ st.set_page_config(
     layout="wide"
 )
 
+# Force the Streamlit sidebar to stay open and visible permanently on all monitors
+st.markdown(
+    """
+    <style>
+        /* Uncollapse the sidebar container */
+        [data-testid="stSidebarCollapsedControl"] {
+            display: none !important;
+        }
+        section[data-testid="stSidebar"] {
+            left: 0 !important;
+            visibility: visible !important;
+            width: 250px !important;
+        }
+        /* Adjust the main content block to sit comfortably next to the open sidebar */
+        .main .block-container {
+            margin-left: 20px !important;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Load the environment keys globally
 load_dotenv() 
 

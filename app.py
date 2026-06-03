@@ -1,78 +1,81 @@
 import os
-from dotenv import load_dotenv
 import streamlit as st
+from dotenv import load_dotenv
 
-# Load the .env file immediately so all background modules (like graph) can use it
-load_dotenv() 
-
-from utils.pdf_reader import read_pdf
-from graph import app_graph
-
+# 1. Page Configuration MUST be the first Streamlit command executed
 st.set_page_config(
     page_title="AI Interview Coach",
     page_icon="🤖",
     layout="wide"
 )
 
-st.title("🤖 AI Interview Coach & Career Guidance System")
+# 2. Define the main application workflow logic
+def main_app():
+    st.title("🤖 AI Interview Coach & Career Guidance System")
 
-uploaded_file = st.file_uploader(
-    "Upload Your Resume (PDF)",
-    type=["pdf"]
-)
-
-if uploaded_file:
-
-    # FIXED: Removed the local file saving logic to prevent read-only disk crashes on the cloud.
-    # Pass the uploaded_file memory stream directly to the reader function.
-    text = read_pdf(uploaded_file)
-
-    st.success("✅ Resume Uploaded Successfully!")
-
-    # Show Resume Content
-    st.subheader("📄 Resume Content")
-
-    with st.expander("View Resume Text"):
-        st.write(text)
-
-    # Career Goal
-    st.subheader("🎯 Target Role")
-
-    target_role = st.text_input(
-        "Enter Your Target Role",
-        value="Machine Learning Engineer"
+    uploaded_file = st.file_uploader(
+        "Upload Your Resume (PDF)",
+        type=["pdf"]
     )
 
-    if st.button("Generate Career Analysis"):
+    if uploaded_file:
+        # Import heavy packages ONLY when a file is actually present to keep things fast
+        from utils.pdf_reader import read_pdf
+        from graph import app_graph
 
-        with st.spinner("Running AI Agents..."):
+        with st.spinner("Extracting text from resume..."):
+            text = read_pdf(uploaded_file)
 
-            result = app_graph.invoke(
-                {
-                    "resume_text": text,
-                    "target_role": target_role,
-                    "analysis": "",
-                    "questions": "",
-                    "skill_gap": "",
-                    "roadmap": ""
-                }
-            )
+        st.success("✅ Resume Uploaded Successfully!")
 
-        # Resume Analysis
-        st.subheader("🧠 Resume Analysis")
-        st.write(result["analysis"])
+        # Show Resume Content
+        st.subheader("📄 Resume Content")
+        with st.expander("View Resume Text"):
+            st.write(text)
 
-        # Interview Questions
-        st.subheader("🎯 Interview Questions")
-        st.write(result["questions"])
+        # Career Goal
+        st.subheader("🎯 Target Role")
+        target_role = st.text_input(
+            "Enter Your Target Role",
+            value="Machine Learning Engineer"
+        )
 
-        # Skill Gap Analysis
-        st.subheader("📊 Skill Gap Analysis")
-        st.write(result["skill_gap"])
+        if st.button("Generate Career Analysis"):
+            with st.spinner("Running AI Agents..."):
+                result = app_graph.invoke(
+                    {
+                        "resume_text": text,
+                        "target_role": target_role,
+                        "analysis": "",
+                        "questions": "",
+                        "skill_gap": "",
+                        "roadmap": ""
+                    }
+                )
 
-        # Learning Roadmap
-        st.subheader("🛣 Personalized Learning Roadmap")
-        st.write(result["roadmap"])
+            # Display Results
+            st.subheader("🧠 Resume Analysis")
+            st.write(result["analysis"])
 
-else:
-    st.info("📄 Please upload a PDF resume to begin.")
+            st.subheader("🎯 Interview Questions")
+            st.write(result["questions"])
+
+            st.subheader("📊 Skill Gap Analysis")
+            st.write(result["skill_gap"])
+
+            st.subheader("🛣 Personalized Learning Roadmap")
+            st.write(result["roadmap"])
+    else:
+        st.info("📄 Please upload a PDF resume to begin.")
+
+# 3. Explicitly construct your sidebar layout using code declarations
+# Replace the filenames below if they don't exactly match what is in your directory
+pages = [
+    st.Page(main_app, title="Resume Analyzer", icon="🤖"),
+    st.Page("pages/1_📊_Dashboard.py", title="Dashboard", icon="📊"),
+    st.Page("pages/2_🎙️_Voice_Interview.py", title="Voice Mock Interview", icon="🎙️"),
+]
+
+# 4. Initialize and display the navigation setup
+pg = st.navigation(pages)
+pg.run()

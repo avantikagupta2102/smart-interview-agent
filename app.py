@@ -23,12 +23,9 @@ uploaded_file = st.file_uploader(
 
 if uploaded_file:
 
-    # Save uploaded PDF
-    with open("resume.pdf", "wb") as f:
-        f.write(uploaded_file.getbuffer())
-
-    # Extract text
-    text = read_pdf("resume.pdf")
+    # FIXED: Removed the local file saving logic to prevent read-only disk crashes on the cloud.
+    # Pass the uploaded_file memory stream directly to the reader function.
+    text = read_pdf(uploaded_file)
 
     st.success("✅ Resume Uploaded Successfully!")
 

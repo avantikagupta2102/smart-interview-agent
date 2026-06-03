@@ -4,3 +4,6 @@ langgraph
 python-dotenv
 pydantic
 pypdf
+streamlit-mic-recorder
+gTTS
+SpeechRecognition

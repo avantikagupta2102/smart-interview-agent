@@ -1,4 +1,5 @@
 import os
+from typing import TypedDict  # <-- ADD THIS MISSING IMPORT LINE HERE
 from dotenv import load_dotenv
 
 # Load keys before anything else
@@ -9,6 +10,12 @@ from agents.resume_agent import analyze_resume
 from agents.interview_agent import generate_questions
 from agents.skill_gap import analyze_skill_gap
 from agents.roadmap_agent import generate_roadmap
+
+# Now this class declaration will work perfectly!
+class InterviewState(TypedDict):
+    resume_text: str
+    target_role: str
+    # ... rest of your existing fields and StateGraph definition ...
 
 
 class InterviewState(TypedDict):

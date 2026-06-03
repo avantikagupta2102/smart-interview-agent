@@ -9,6 +9,17 @@ st.set_page_config(
     layout="wide"
 )
 
+# Force the Streamlit sidebar to stay open and visible permanently on all monitors
+st.markdown(
+    """
+    <style>
+        [data-testid="stSidebarCollapsedControl"] {display: none !important;}
+        section[data-testid="stSidebar"] {left: 0 !important; visibility: visible !important;}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # 2. Define the main application workflow logic
 def main_app():
     st.title("🤖 AI Interview Coach & Career Guidance System")
@@ -69,26 +80,14 @@ def main_app():
         st.info("📄 Please upload a PDF resume to begin.")
 
 
-# 3. Dynamic Page Scanner Layout
-# This automatically searches your pages folder and loads your exact subpages securely!
-pages_dir = "pages"
-discovered_pages = [st.Page(main_app, title="Resume Analyzer", icon="🤖")]
-
-if os.path.exists(pages_dir):
-    for file in sorted(os.listdir(pages_dir)):
-        if file.endswith(".py") and not file.startswith("__"):
-            # Format a clean title from the filename string (e.g. "voice_interview" -> "Voice interview")
-            clean_title = file.replace(".py", "").replace("_", " ").capitalize()
-            
-            # Dynamically attach an appropriate sidebar icon
-            page_icon = "🎙️" if "voice" in file.lower() or "interview" in file.lower() else "📊"
-            
-            # Map and append the file configuration cleanly
-            discovered_pages.append(
-                st.Page(os.path.join(pages_dir, file), title=clean_title, icon=page_icon)
-            )
-
+# 3. Explicitly construct your sidebar layout using code declarations
+# We map directly to lowercase folder layouts to prevent platform discovery drops
+pages = [
+    st.Page(main_app, title="Resume Analyzer", icon="🤖"),
+    st.Page("pages/dashboard.py", title="Dashboard", icon="📊"),
+    st.Page("pages/voice_interview.py", title="Voice Mock Interview", icon="🎙️"),
+]
 
 # 4. Initialize and display the navigation setup
-pg = st.navigation(discovered_pages)
+pg = st.navigation(pages)
 pg.run()

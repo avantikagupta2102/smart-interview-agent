@@ -9,7 +9,7 @@ st.set_page_config(
     page_title="AI Interview Coach",
     page_icon="🤖",
     layout="wide",
-    initial_sidebar_state="collapsed"  # Force sidebar open on startup
+    initial_sidebar_state="expanded"  # Force sidebar open on startup
 )
 
 load_dotenv()

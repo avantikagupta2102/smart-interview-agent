@@ -1,7 +1,10 @@
-from typing import TypedDict
+import os
+from dotenv import load_dotenv
 
-from langgraph.graph import StateGraph
+# Load keys before anything else
+load_dotenv()
 
+# Direct module file imports
 from agents.resume_agent import analyze_resume
 from agents.interview_agent import generate_questions
 from agents.skill_gap import analyze_skill_gap

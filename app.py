@@ -148,14 +148,18 @@ def voice_interview_page():
         else:
             st.success("🎉 Interview Completed!")
 
-# ==========================================
-# HARDCODED SIDEBAR NAVIGATION INITIALIZATION
-# ==========================================
-pages = [
-    st.Page(resume_analyzer_page, title="Resume Analyzer", icon="🤖"),
-    st.Page(dashboard_page, title="Dashboard", icon="📊"),
-    st.Page(voice_interview_page, title="Voice Mock Interview", icon="🎙️"),
-]
 
-pg = st.navigation(pages)
+# ==========================================
+# RESTRUCTURED NAV ROUTING SECTION
+# ==========================================
+# Declare and tie pages cleanly into Streamlit's routing architecture
+pg = st.navigation({
+    "Navigation Menu": [
+        st.Page(resume_analyzer_page, title="Resume Analyzer", icon="🤖", default=True),
+        st.Page(dashboard_page, title="Dashboard", icon="📊"),
+        st.Page(voice_interview_page, title="Voice Mock Interview", icon="🎙️"),
+    ]
+})
+
+# Run routing engine
 pg.run()

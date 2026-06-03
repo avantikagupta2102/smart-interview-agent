@@ -68,16 +68,27 @@ def main_app():
     else:
         st.info("📄 Please upload a PDF resume to begin.")
 
-# 3. Explicitly construct your sidebar layout using code declarations
-# Replace the filenames below if they don't exactly match what is in your directory
-pages = [
-    st.Page(main_app, title="Resume Analyzer", icon="🤖"),
-    st.Page("pages/EXACT_FILENAME_FROM_TERMINAL_HERE.py", title="Dashboard", icon="📊"),
-    st.Page("pages/EXACT_SECOND_FILENAME_HERE.py", title="Voice Mock Interview", icon="🎙️"),
-]
 
+# 3. Dynamic Page Scanner Layout
+# This automatically searches your pages folder and loads your exact subpages securely!
+pages_dir = "pages"
+discovered_pages = [st.Page(main_app, title="Resume Analyzer", icon="🤖")]
+
+if os.path.exists(pages_dir):
+    for file in sorted(os.listdir(pages_dir)):
+        if file.endswith(".py") and not file.startswith("__"):
+            # Format a clean title from the filename string (e.g. "voice_interview" -> "Voice interview")
+            clean_title = file.replace(".py", "").replace("_", " ").capitalize()
+            
+            # Dynamically attach an appropriate sidebar icon
+            page_icon = "🎙️" if "voice" in file.lower() or "interview" in file.lower() else "📊"
+            
+            # Map and append the file configuration cleanly
+            discovered_pages.append(
+                st.Page(os.path.join(pages_dir, file), title=clean_title, icon=page_icon)
+            )
 
 
 # 4. Initialize and display the navigation setup
-pg = st.navigation(pages)
+pg = st.navigation(discovered_pages)
 pg.run()

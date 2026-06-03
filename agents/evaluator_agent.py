@@ -1,7 +1,13 @@
+import os
+from dotenv import load_dotenv
 from groq import Groq
 
+# 1. Load the environment file variables
+load_dotenv()
+
+# 2. Grab the actual key using os.getenv instead of using a hardcoded string
 client = Groq(
-    api_key="YOUR_GROQ_API_KEY"
+    api_key=os.getenv("GROQ_API_KEY")
 )
 
 def evaluate_answer(question, answer):

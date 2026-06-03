@@ -1,4 +1,9 @@
+import os
+from dotenv import load_dotenv
 import streamlit as st
+
+# Load the .env file immediately so all background modules (like graph) can use it
+load_dotenv() 
 
 from utils.pdf_reader import read_pdf
 from graph import app_graph

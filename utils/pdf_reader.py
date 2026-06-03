@@ -1,7 +1,8 @@
 from pypdf import PdfReader
 
-def read_pdf(file_path):
-    reader = PdfReader(file_path)
+def read_pdf(file_object):
+    # This reads the PDF directly out of Streamlit's RAM buffer
+    reader = PdfReader(file_object)
 
     text = ""
 

@@ -1,41 +1,23 @@
 import os
+import sys
 import streamlit as st
+import pandas as pd
 from dotenv import load_dotenv
 
 # 1. Page Configuration MUST be the first Streamlit command executed
 st.set_page_config(
     page_title="AI Interview Coach",
     page_icon="🤖",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"  # Force sidebar open on startup
 )
 
-# Force the Streamlit sidebar to stay open and visible permanently on all monitors
-st.markdown(
-    """
-    <style>
-        /* Uncollapse the sidebar container */
-        [data-testid="stSidebarCollapsedControl"] {
-            display: none !important;
-        }
-        section[data-testid="stSidebar"] {
-            left: 0 !important;
-            visibility: visible !important;
-            width: 250px !important;
-        }
-        /* Adjust the main content block to sit comfortably next to the open sidebar */
-        .main .block-container {
-            margin-left: 20px !important;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+load_dotenv()
 
-# Load the environment keys globally
-load_dotenv() 
-
-# 2. Page 1: Resume Analyzer
-def main_app():
+# ==========================================
+# PAGE 1: RESUME ANALYZER SYSTEM
+# ==========================================
+def resume_analyzer_page():
     st.title("🤖 AI Interview Coach & Career Guidance System")
     uploaded_file = st.file_uploader("Upload Your Resume (PDF)", type=["pdf"])
 
@@ -70,48 +52,110 @@ def main_app():
     else:
         st.info("📄 Please upload a PDF resume to begin.")
 
-# 3. Page 2: Dashboard (Imported directly to bypass folder issues)
-def dashboard_app():
-    try:
-        from pages.dashboard import FILE
-        import pandas as pd
-        
-        st.title("📊 Interview Dashboard")
-        if not os.path.exists("data"):
-            os.makedirs("data")
-            
-        if not os.path.exists(FILE) or os.stat(FILE).st_size == 0:
-            st.info("📄 No interview history found yet. Complete a voice interview first!")
-        else:
+# ==========================================
+# PAGE 2: INTERVIEW DASHBOARD METRICS
+# ==========================================
+def dashboard_page():
+    st.title("📊 Interview Dashboard")
+    FILE = "data/interview_history.csv"
+    
+    if not os.path.exists("data"):
+        os.makedirs("data")
+
+    if not os.path.exists(FILE) or os.stat(FILE).st_size == 0:
+        st.info("📄 No interview history found yet. Complete a voice interview first!")
+    else:
+        try:
             df = pd.read_csv(FILE)
             st.subheader("Interview History")
             st.dataframe(df, use_container_width=True)
             st.metric("Total Questions Answered", len(df))
-    except Exception as e:
-        st.error(f"Could not load dashboard view: {e}")
+        except Exception as e:
+            st.error(f"Error loading dashboard: {e}")
 
-# 4. Page 3: Voice Interview (Imported directly to bypass folder issues)
-def voice_app():
-    try:
-        # This executes the interior layout of your voice script safely
-        import sys
-        if 'pages.voice_interview' in sys.modules:
-            del sys.modules['pages.voice_interview']
-        import pages.voice_interview
-    except Exception as e:
-        # If case-sensitivity is flipped on the server, catch the alternate name
-        try:
-            import pages.Voice_interview
-        except:
-            st.error(f"Could not load voice view: {e}")
+# ==========================================
+# PAGE 3: VOICE MOCK INTERVIEW CORE
+# ==========================================
+def voice_interview_page():
+    st.title("🎤 AI Mock Interview Panel")
+    from streamlit_mic_recorder import mic_recorder
 
-# 5. Build the Hardcoded Sidebar Navigation Menu
+    resume_text = st.text_area("Paste Resume Text")
+
+    if st.button("Generate Interview Questions"):
+        from agents.interview_agent import generate_questions
+        with st.spinner("Generating questions..."):
+            raw_questions = generate_questions(resume_text)
+
+        questions = [line.strip() for line in raw_questions.split("\n") if len(line.strip()) > 5]
+        st.session_state.questions = questions
+        st.session_state.current_question = 0
+        st.session_state.scores = []
+        st.rerun()
+
+    if "questions" in st.session_state:
+        idx = st.session_state.current_question
+        questions = st.session_state.questions
+
+        if idx < len(questions):
+            question = questions[idx]
+            st.subheader(f"Question {idx + 1}")
+            st.write(question)
+
+            if st.button("🔊 Hear Question"):
+                from agents.voice_agent import generate_audio
+                with st.spinner("Generating audio..."):
+                    audio_file = generate_audio(question)
+                st.audio(audio_file)
+
+            st.subheader("🎤 Record Your Answer")
+            audio = mic_recorder(
+                start_prompt="🎤 Start Recording", stop_prompt="⏹ Stop Recording",
+                just_once=True, use_container_width=True
+            )
+
+            if audio:
+                st.success("Recording completed in memory!")
+                from agents.transcription_agent import transcribe_audio
+                from agents.evaluator_agent import evaluate_answer
+                from utils.save_results import save_result
+
+                try:
+                    with open("temp_answer.wav", "wb") as f:
+                        f.write(audio["bytes"])
+                    
+                    with st.spinner("Transcribing..."):
+                        answer = transcribe_audio("temp_answer.wav")
+                    st.subheader("Transcript")
+                    st.write(answer)
+
+                    with st.spinner("Evaluating..."):
+                        feedback = evaluate_answer(question, answer)
+                    st.subheader("AI Feedback")
+                    st.write(feedback)
+
+                    save_result(question, answer, feedback)
+                    st.session_state.scores.append(feedback)
+
+                    if os.path.exists("temp_answer.wav"):
+                        os.remove("temp_answer.wav")
+                except Exception as e:
+                    st.error(f"Audio workflow failed: {e}")
+
+            if st.button("➡ Next Question"):
+                st.session_state.current_question += 1
+                st.rerun()
+        else:
+            st.success("🎉 Interview Completed!")
+
+# ==========================================
+# HARDCODED SIDEBAR NAVIGATION INITIALIZATION
+# ==========================================
 pages = [
-    st.Page(main_app, title="Resume Analyzer", icon="🤖"),
-    st.Page(dashboard_app, title="Dashboard", icon="📊"),
-    st.Page(voice_app, title="Voice Mock Interview", icon="🎙️"),
+    st.Page(resume_analyzer_page, title="Resume Analyzer", icon="🤖"),
+    st.Page(dashboard_page, title="Dashboard", icon="📊"),
+    st.Page(voice_interview_page, title="Voice Mock Interview", icon="🎙️"),
 ]
 
-# 6. Initialize and display the navigation setup
 pg = st.navigation(pages)
 pg.run()

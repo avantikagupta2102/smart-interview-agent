@@ -50,6 +50,13 @@ def init_db():
             FOREIGN KEY(username) REFERENCES users(username)
         )
     """)
+    
+    # DATABASE MIGRATION SYSTEM: Forcefully add 'score' column if older database exists
+    try:
+        cursor.execute("ALTER TABLE history ADD COLUMN score REAL")
+    except sqlite3.OperationalError:
+        pass # Column already exists, safe to ignore
+        
     conn.commit()
     conn.close()
 
@@ -89,7 +96,12 @@ def save_interview_entry(username, question, answer, feedback, score):
 
 def get_user_history(username):
     conn = sqlite3.connect(DB_FILE)
-    df = pd.read_sql_query("SELECT timestamp, question, answer, feedback, score FROM history WHERE username = ?", conn)
+    # FIX: Correctly pass the username variable inside the params argument as a list
+    df = pd.read_sql_query(
+        sql="SELECT timestamp, question, answer, feedback, score FROM history WHERE username = ?", 
+        con=conn, 
+        params=[username]
+    )
     conn.close()
     return df
 
@@ -267,7 +279,6 @@ if "username" not in st.session_state:
 
 if not st.session_state.authenticated:
     st.title("🔐 Secure Gateway Portal — AI Interview Coach")
-    
     auth_mode = st.radio("Access Selection Mode", ["Login Existing Profile", "Create New Identity Account"], horizontal=True)
     
     form_col1, form_col2 = st.columns(2)

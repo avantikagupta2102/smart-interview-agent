@@ -3,3 +3,4 @@ groq
 langgraph
 python-dotenv
 pydantic
+pypdf

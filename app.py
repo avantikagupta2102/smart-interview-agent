@@ -1,90 +1,199 @@
 import os
 import sys
+import sqlite3
+import re
+from datetime import datetime
 import streamlit as st
 import pandas as pd
 from dotenv import load_dotenv
 
-# 1. Page Configuration MUST be the first Streamlit command executed
+# ==========================================
+# 1. CORE PAGE CONFIGURATION
+# ==========================================
 st.set_page_config(
-    page_title="AI Interview Coach",
+    page_title="AI Interview Coach Pro",
     page_icon="🤖",
     layout="wide",
-    initial_sidebar_state="expanded"  # Force sidebar open on startup
+    initial_sidebar_state="expanded"
 )
 
 load_dotenv()
 
 # ==========================================
-# PAGE 1: RESUME ANALYZER SYSTEM
+# 2. DATABASE ORCHESTRATION LAYER (SQLITE)
 # ==========================================
+DB_FILE = "data/interview_coach.db"
+
+def init_db():
+    if not os.path.exists("data"):
+        os.makedirs("data")
+        
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            username TEXT PRIMARY KEY,
+            password TEXT NOT NULL
+        )
+    """)
+    
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT,
+            timestamp TEXT,
+            question TEXT,
+            answer TEXT,
+            feedback TEXT,
+            score REAL,
+            FOREIGN KEY(username) REFERENCES users(username)
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+init_db()
+
+# ==========================================
+# 3. HELPER UTILITY FUNCTIONS
+# ==========================================
+def register_user(username, password):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+    conn.commit()
+    conn.close()
+    return True
+
+def check_login(username, password):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+    user = cursor.fetchone()
+    conn.close()
+    if user is not None:
+        return True
+    return False
+
+def save_interview_entry(username, question, answer, feedback, score):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute("""
+        INSERT INTO history (username, timestamp, question, answer, feedback, score)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (username, timestamp, question, answer, feedback, score))
+    conn.commit()
+    conn.close()
+
+def get_user_history(username):
+    conn = sqlite3.connect(DB_FILE)
+    df = pd.read_sql_query("SELECT timestamp, question, answer, feedback, score FROM history WHERE username = ?", conn)
+    conn.close()
+    return df
+
+def parse_numerical_score(feedback_text):
+    match = re.search(r"(\d+)\s*/\s*10", feedback_text)
+    if match:
+        return float(match.group(1))
+    match_pct = re.search(r"(\d+)%", feedback_text)
+    if match_pct:
+        return float(match_pct.group(1)) / 10.0
+    return 7.0
+
+# ==========================================
+# 4. STREAMLIT APPLICATION INTERFACE PAGES
+# ==========================================
+
 def resume_analyzer_page():
-    st.title("🤖 AI Interview Coach & Career Guidance System")
-    uploaded_file = st.file_uploader("Upload Your Resume (PDF)", type=["pdf"])
+    st.markdown("## 🤖 AI Resume Analyzer & Career Guidance")
+    st.info("Upload your industry CV/Resume below to extract critical structural career mappings.")
+    
+    uploaded_file = st.file_uploader("Upload Your Resume (PDF Only)", type=["pdf"])
 
     if uploaded_file:
         from utils.pdf_reader import read_pdf
         from graph import app_graph
 
-        with st.spinner("Extracting text from resume..."):
+        with st.spinner("Processing document layout structures..."):
             text = read_pdf(uploaded_file)
-        st.success("✅ Resume Uploaded Successfully!")
+        st.success("✅ Document Processing Complete!")
 
-        with st.expander("View Resume Text"):
-            st.write(text)
+        with st.expander("🔍 View Parsed Resume String Content"):
+            st.text(text)
 
-        st.subheader("🎯 Target Role")
-        target_role = st.text_input("Enter Your Target Role", value="Machine Learning Engineer")
+        st.subheader("🎯 Optimization Targets")
+        target_role = st.text_input("Target Employment Specification Role", value="Machine Learning Engineer")
 
-        if st.button("Generate Career Analysis"):
-            with st.spinner("Running AI Agents..."):
+        if st.button("Generate Strategic Career Insights"):
+            with st.spinner("Invoking Autonomous Multi-Agent Graphs..."):
                 result = app_graph.invoke({
                     "resume_text": text, "target_role": target_role,
                     "analysis": "", "questions": "", "skill_gap": "", "roadmap": ""
                 })
-            st.subheader("🧠 Resume Analysis")
-            st.write(result["analysis"])
-            st.subheader("🎯 Interview Questions")
-            st.write(result["questions"])
-            st.subheader("📊 Skill Gap Analysis")
-            st.write(result["skill_gap"])
-            st.subheader("🛣 Personalized Learning Roadmap")
-            st.write(result["roadmap"])
+            
+            tab1, tab2, tab3, tab4 = st.tabs(["🧠 Comprehensive Analysis", "🎯 Targeted Questions", "📊 Core Skill Gaps", "🛣 Strategy Roadmap"])
+            with tab1: 
+                st.write(result["analysis"])
+            with tab2: 
+                st.write(result["questions"])
+            with tab3: 
+                st.write(result["skill_gap"])
+            with tab4: 
+                st.write(result["roadmap"])
     else:
-        st.info("📄 Please upload a PDF resume to begin.")
+        st.info("📄 Please upload a PDF resume file to initialize the tracking dashboard.")
 
-# ==========================================
-# PAGE 2: INTERVIEW DASHBOARD METRICS
-# ==========================================
 def dashboard_page():
-    st.title("📊 Interview Dashboard")
-    FILE = "data/interview_history.csv"
+    st.markdown(f"## 📊 Personal Analytics Dashboard — **{st.session_state.username}**")
     
-    if not os.path.exists("data"):
-        os.makedirs("data")
+    df = get_user_history(st.session_state.username)
+    
+    if df.empty:
+        st.warning("📄 No historical logs found for this account. Run an active Voice Interview panel session to generate visual logs.")
+        return
 
-    if not os.path.exists(FILE) or os.stat(FILE).st_size == 0:
-        st.info("📄 No interview history found yet. Complete a voice interview first!")
-    else:
-        try:
-            df = pd.read_csv(FILE)
-            st.subheader("Interview History")
-            st.dataframe(df, use_container_width=True)
-            st.metric("Total Questions Answered", len(df))
-        except Exception as e:
-            st.error(f"Error loading dashboard: {e}")
+    m1, m2, m3 = st.columns(3)
+    with m1:
+        st.metric("Total Answers Analyzed", len(df))
+    with m2:
+        avg_score = round(df["score"].mean(), 2)
+        st.metric("Mean Performance Rating", f"{avg_score} / 10")
+    with m3:
+        unique_days = pd.to_datetime(df["timestamp"]).dt.date.nunique()
+        st.metric("Active Interview Practice Days", unique_days)
 
-# ==========================================
-# PAGE 3: VOICE MOCK INTERVIEW CORE
-# ==========================================
+    st.markdown("---")
+    
+    st.subheader("📈 Visual Performance Progress Timeline")
+    chart_col1, chart_col2 = st.columns(2)
+    
+    with chart_col1:
+        st.write("📉 **Score Progress Over Time**")
+        timeline_df = df.copy().sort_values(by="timestamp")
+        timeline_df = timeline_df.set_index("timestamp")
+        st.line_chart(timeline_df["score"])
+        
+    with chart_col2:
+        st.write("🎯 **Score Distribution**")
+        score_distribution = df["score"].value_counts().sort_index()
+        st.bar_chart(score_distribution)
+
+    st.markdown("---")
+    
+    st.subheader("📋 Comprehensive Historic Verification Archive Log")
+    st.dataframe(df, width="stretch")
+
 def voice_interview_page():
-    st.title("🎤 AI Mock Interview Panel")
+    st.markdown("## 🎙️ AI Mock Interview Simulation Environment Panel")
     from streamlit_mic_recorder import mic_recorder
 
-    resume_text = st.text_area("Paste Resume Text")
+    resume_text = st.text_area("Input Base Text Context / CV String", height=150)
 
-    if st.button("Generate Interview Questions"):
+    if st.button("Generate Interview Session Evaluation Queue"):
         from agents.interview_agent import generate_questions
-        with st.spinner("Generating questions..."):
+        with st.spinner("Generating specialized technical evaluation strings..."):
             raw_questions = generate_questions(resume_text)
 
         questions = [line.strip() for line in raw_questions.split("\n") if len(line.strip()) > 5]
@@ -99,67 +208,103 @@ def voice_interview_page():
 
         if idx < len(questions):
             question = questions[idx]
-            st.subheader(f"Question {idx + 1}")
-            st.write(question)
+            
+            st.markdown(f"### ❓ Current Question {idx + 1} of {len(questions)}")
+            st.info(question)
 
-            if st.button("🔊 Hear Question"):
+            if st.button("🔊 Play Audio Stream Module"):
                 from agents.voice_agent import generate_audio
-                with st.spinner("Generating audio..."):
+                with st.spinner("Synthesizing dynamic audio flow structure..."):
                     audio_file = generate_audio(question)
                 st.audio(audio_file)
 
-            st.subheader("🎤 Record Your Answer")
+            st.markdown("#### 🎤 Capture Live Voice Audio Input Capture")
             audio = mic_recorder(
-                start_prompt="🎤 Start Recording", stop_prompt="⏹ Stop Recording",
-                just_once=True, use_container_width=True
+                start_prompt="🎤 Start Capture", stop_prompt="⏹ Terminate Stream",
+                just_once=True, width="stretch"
             )
 
             if audio:
-                st.success("Recording completed in memory!")
+                st.success("✅ Voice stream successfully captured to memory context buffer!")
                 from agents.transcription_agent import transcribe_audio
                 from agents.evaluator_agent import evaluate_answer
-                from utils.save_results import save_result
+                
+                with open("temp_answer.wav", "wb") as f:
+                    f.write(audio["bytes"])
+                
+                with st.spinner("Processing Voice-To-Text Audio Transcriptions..."):
+                    answer = transcribe_audio("temp_answer.wav")
+                st.markdown("**Your Captured Transcript:**")
+                st.write(answer)
 
-                try:
-                    with open("temp_answer.wav", "wb") as f:
-                        f.write(audio["bytes"])
-                    
-                    with st.spinner("Transcribing..."):
-                        answer = transcribe_audio("temp_answer.wav")
-                    st.subheader("Transcript")
-                    st.write(answer)
+                with st.spinner("Calculating Critical Evaluation Metrics..."):
+                    feedback = evaluate_answer(question, answer)
+                st.markdown("**AI Response Feedback Assessment Metric Output:**")
+                st.write(feedback)
 
-                    with st.spinner("Evaluating..."):
-                        feedback = evaluate_answer(question, answer)
-                    st.subheader("AI Feedback")
-                    st.write(feedback)
+                computed_score = parse_numerical_score(feedback)
+                
+                save_interview_entry(st.session_state.username, question, answer, feedback, computed_score)
+                st.session_state.scores.append(computed_score)
 
-                    save_result(question, answer, feedback)
-                    st.session_state.scores.append(feedback)
+                if os.path.exists("temp_answer.wav"):
+                    os.remove("temp_answer.wav")
 
-                    if os.path.exists("temp_answer.wav"):
-                        os.remove("temp_answer.wav")
-                except Exception as e:
-                    st.error(f"Audio workflow failed: {e}")
-
-            if st.button("➡ Next Question"):
+            if st.button("Proceed to Next Question ➡"):
                 st.session_state.current_question += 1
                 st.rerun()
         else:
-            st.success("🎉 Interview Completed!")
-
+            st.success("🎉 Simulation Ended! Proceed to the Performance Dashboard to verify historical timeline logs.")
 
 # ==========================================
-# RESTRUCTURED NAV ROUTING SECTION
+# 5. CORE ROUTING INFRASTRUCTURE & SECURITY
 # ==========================================
-# Declare and tie pages cleanly into Streamlit's routing architecture
-pg = st.navigation({
-    "Navigation Menu": [
-        st.Page(resume_analyzer_page, title="Resume Analyzer", icon="🤖", default=True),
-        st.Page(dashboard_page, title="Dashboard", icon="📊"),
-        st.Page(voice_interview_page, title="Voice Mock Interview", icon="🎙️"),
-    ]
-})
 
-# Run routing engine
-pg.run()
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+if "username" not in st.session_state:
+    st.session_state.username = None
+
+if not st.session_state.authenticated:
+    st.title("🔐 Secure Gateway Portal — AI Interview Coach")
+    
+    auth_mode = st.radio("Access Selection Mode", ["Login Existing Profile", "Create New Identity Account"], horizontal=True)
+    
+    form_col1, form_col2 = st.columns(2)
+    with form_col1:
+        user_input = st.text_input("Username Identification String").strip()
+        pass_input = st.text_input("Security Access Password", type="password").strip()
+        
+    if auth_mode == "Login Existing Profile":
+        if st.button("Unlock Dashboard Portal"):
+            if check_login(user_input, pass_input):
+                st.session_state.authenticated = True
+                st.session_state.username = user_input
+                st.success(f"Access granted. Welcome back {user_input}!")
+                st.rerun()
+            else:
+                st.error("❌ Identification mismatch verification error. Check username or password.")
+    else:
+        if st.button("Provision New Account Assets"):
+            if user_input == "" or pass_input == "":
+                st.warning("⚠️ Parameter definitions can not contain empty space entities.")
+            else:
+                register_user(user_input, pass_input)
+                st.success("🎉 Identity provisioning sequence succeeded! Select 'Login Existing Profile' above to connect.")
+else:
+    with st.sidebar:
+        st.markdown(f"### 👤 Profile: {st.session_state.username}")
+        if st.button("🔒 Log out of Session"):
+            st.session_state.authenticated = False
+            st.session_state.username = None
+            st.rerun()
+        st.markdown("---")
+        
+    pg = st.navigation({
+        "System Utilities Workspace": [
+            st.Page(page=resume_analyzer_page, title="Resume Analyzer", icon="🤖", default=True),
+            st.Page(page=dashboard_page, title="Performance Dashboard", icon="📊"),
+            st.Page(page=voice_interview_page, title="Voice Mock Interview Panel", icon="🎙️"),
+        ]
+    }, position="sidebar")
+    pg.run()

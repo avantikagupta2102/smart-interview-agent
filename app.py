@@ -72,9 +72,10 @@ def main_app():
 # Replace the filenames below if they don't exactly match what is in your directory
 pages = [
     st.Page(main_app, title="Resume Analyzer", icon="🤖"),
-    st.Page("pages/1_📊_Dashboard.py", title="Dashboard", icon="📊"),
-    st.Page("pages/2_🎙️_Voice_Interview.py", title="Voice Mock Interview", icon="🎙️"),
+    st.Page("pages/Dashboard.py", title="Dashboard", icon="📊"),
+    st.Page("pages/Voice_Interview.py", title="Voice Mock Interview", icon="🎙️"),
 ]
+
 
 # 4. Initialize and display the navigation setup
 pg = st.navigation(pages)

@@ -230,9 +230,9 @@ def voice_interview_page():
                     audio_file = generate_audio(question)
                 st.audio(audio_file)
 
+          
             st.markdown("#### 🎤 Capture Live Voice Audio Input Capture")
-            st.markdown("#### 🎤 Capture Live Voice Audio Input Capture")
-            # REMOVED width="stretch" or use_container_width parameter entirely to prevent TypeErrors
+           
             audio = mic_recorder(
                 start_prompt="🎤 Start Capture", 
                 stop_prompt="⏹ Terminate Stream",

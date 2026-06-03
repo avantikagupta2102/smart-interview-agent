@@ -3,6 +3,9 @@ import sys
 from typing import TypedDict
 from dotenv import load_dotenv
 
+# 1. ADD THIS MISSING IMPORT LINE TO FIX THE NAMEERROR
+from langgraph.graph import StateGraph, START, END
+
 # Load keys before anything else
 load_dotenv()
 

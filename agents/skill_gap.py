@@ -23,14 +23,13 @@ def analyze_skill_gap(resume_text, target_role):
     3. Skill Match Percentage
     4. Important Certifications
     """
-
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[
-            {{
+            {
                 "role": "user",
                 "content": prompt
-            }}
+            }
         ]
     )
 

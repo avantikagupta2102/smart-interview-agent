@@ -1,18 +1,33 @@
 import os
+import sys
 from typing import TypedDict
 from dotenv import load_dotenv
-
-# 1. ADD THIS MISSING LANGGRAPH IMPORT LINE
-from langgraph.graph import StateGraph, START, END  
 
 # Load keys before anything else
 load_dotenv()
 
-# Direct module file imports
-from agents.resume_agent import analyze_resume
-from agents.interview_agent import generate_questions
-from agents.skill_gap import analyze_skill_gap
-from agents.roadmap_agent import generate_roadmap
+# Force python path mapping to clear out broken internal cloud cache keys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# Direct clean module script imports
+import agents.resume_agent as resume_agent
+import agents.interview_agent as interview_agent
+import agents.skill_gap as skill_gap
+import agents.roadmap_agent as roadmap_agent
+
+# Point your workflow actions to use the exact object targets
+analyze_resume = resume_agent.analyze_resume
+generate_questions = interview_agent.generate_questions
+analyze_skill_gap = skill_gap.analyze_skill_gap
+generate_roadmap = roadmap_agent.generate_roadmap
+
+class InterviewState(TypedDict):
+    resume_text: str
+    target_role: str
+    analysis: str
+    questions: str
+    skill_gap: str
+    roadmap: str
 
 class InterviewState(TypedDict):
     resume_text: str

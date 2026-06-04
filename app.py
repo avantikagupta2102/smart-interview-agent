@@ -109,7 +109,7 @@ def resume_analyzer_page():
     st.markdown("---")
     
     with st.container(border=True):
-        st.markdown("###Upload Document")
+        st.markdown("Upload Document")
         uploaded_file = st.file_uploader("Upload your CV or Resume in standard format", type=["pdf"], label_visibility="collapsed")
 
     if uploaded_file:
@@ -125,7 +125,7 @@ def resume_analyzer_page():
         with st.expander("View Resume"):
             st.text(text)
 
-        st.markdown("###  Personalised Optimization ")
+        st.markdown("Personalised Optimization ")
         with st.container(border=True):
             target_role = st.text_input("Enter Target Role:", value="Machine Learning Engineer")
 

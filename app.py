@@ -116,21 +116,21 @@ def resume_analyzer_page():
         from utils.pdf_reader import read_pdf
         from graph import app_graph
 
-        with st.status("Parsing file metadata layouts...", expanded=True) as status:
-            st.write("Extracting character text strings...")
+        with st.status("Parsing files...", expanded=True) as status:
+            st.write("Extracting text...")
             text = read_pdf(uploaded_file)
             st.write("Constructing internal buffer state tables...")
             status.update(label="Document Processed Successfully!", state="complete", expanded=False)
 
-        with st.expander("View Extracted Resume"):
+        with st.expander("View Resume"):
             st.text(text)
 
         st.markdown("###  Personalised Optimization ")
         with st.container(border=True):
             target_role = st.text_input("Enter Target Role:", value="Machine Learning Engineer")
 
-        if st.button("Generate Strategic Career Insights", type="primary"):
-            with st.spinner("Invoking Multi-Agent Processing Graphs..."):
+        if st.button("Generate Data ", type="primary"):
+            with st.spinner("Running Multiple AI Agents..."):
                 result = app_graph.invoke({
                     "resume_text": text, "target_role": target_role,
                     "analysis": "", "questions": "", "skill_gap": "", "roadmap": ""
@@ -140,7 +140,7 @@ def resume_analyzer_page():
             with tab1: st.info(result["analysis"])
             with tab2: st.success(result["questions"])
             with tab3: st.warning(result["skill_gap"])
-            with tab4: st.help(result["roadmap"])
+            with tab4: st.markdown(result["roadmap"])
     else:
         st.info(" Please upload a PDF resume document target file to initialize optimization analytics for you .")
 
@@ -168,7 +168,7 @@ def dashboard_page():
     with st.container(border=True):
         chart_col1, chart_col2 = st.columns(2)
         with chart_col1:
-            st.markdown("**Performance Progression Over Time Logs:**")
+            st.markdown("**Performance Progression Over Time:**")
             timeline_df = df.copy().sort_values(by="timestamp")
             timeline_df = timeline_df.set_index("timestamp")
             st.line_chart(timeline_df["score"])
@@ -184,7 +184,7 @@ def dashboard_page():
 
 def voice_interview_page():
     st.markdown("#  Mock Interview ")
-    st.markdown("Simulate interactive technical question tracking with real-time feedback processing metrics personalised for you!.")
+    st.markdown("Interactive technical question tracking with real-time feedback processing metrics personalised for you!.")
     st.markdown("---")
     
     from streamlit_mic_recorder import mic_recorder
@@ -193,9 +193,9 @@ def voice_interview_page():
         st.markdown("### Your mock interview :")
         resume_text = st.text_area("Paste resume text here:", height=120)
 
-    if st.button("Generate Interview Evaluation Queue", type="primary"):
+    if st.button("Generate Interview ", type="primary"):
         from agents.interview_agent import generate_questions
-        with st.spinner("Synthesizing custom simulation questions..."):
+        with st.spinner("Synthesizing custom questions..."):
             raw_questions = generate_questions(resume_text)
 
         questions = [line.strip() for line in raw_questions.split("\n") if len(line.strip()) > 5]
@@ -272,7 +272,7 @@ if "username" not in st.session_state:
     st.session_state.username = None
 
 if not st.session_state.authenticated:
-    st.title("🔐 Secure Gateway Portal — AI Interview Coach")
+    st.title(" Secure Gateway Portal — AI Interview Coach")
     
     with st.container(border=True):
         auth_mode = st.radio("Access Selection Mode", ["Login Existing Profile", "Create New Identity Account"], horizontal=True)
@@ -290,30 +290,30 @@ if not st.session_state.authenticated:
                         st.success(f"Access granted. Welcome back {user_input}!")
                         st.rerun()
                     else:
-                        st.error("❌ Identification mismatch validation verification error. Check username or password.")
+                        st.error(" Identification mismatch validation verification error. Check username or password.")
             else:
                 if st.button("Provision New Account Assets", type="primary"):
                     if user_input == "" or pass_input == "":
-                        st.warning("⚠️ Parameter definitions can not contain empty space entities.")
+                        st.warning("Parameter definitions can not contain empty space entities.")
                     else:
                         register_user(user_input, pass_input)
-                        st.success("🎉 Identity provisioning sequence succeeded! Select 'Login Existing Profile' above to connect.")
+                        st.success("Identity provisioning sequence succeeded! Select 'Login Existing Profile' above to connect.")
 else:
     with st.sidebar:
-        st.markdown(f"### 👤 Profile: **{st.session_state.username}**")
-        if st.button("🔒 Log out of Session", use_container_width=True):
+        st.markdown(f"###  Profile: **{st.session_state.username}**")
+        if st.button(" Log out of Session", use_container_width=True):
             st.session_state.authenticated = False
             st.session_state.username = None
             st.rerun()
         st.markdown("---")
 
-    # FIX: Explicitly pass list directly into dictionary to avoid 'pages' variable name collisions
+   
     pg = st.navigation(
         {
-            "System Utilities Workspace": [
-                st.Page(page=resume_analyzer_page, title="Resume Analyzer", icon="🤖", default=True),
-                st.Page(page=dashboard_page, title="Performance Dashboard", icon="📊"),
-                st.Page(page=voice_interview_page, title="Voice Mock Interview Panel", icon="🎙️"),
+            "System Workspaces:": [
+                st.Page(page=resume_analyzer_page, title="Resume Analyzer", default=True),
+                st.Page(page=dashboard_page, title="Performance Dashboard"),
+                st.Page(page=voice_interview_page, title="Voice Mock Interview Panel"),
             ]
         }, 
         position="sidebar"

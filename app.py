@@ -140,7 +140,7 @@ def resume_analyzer_page():
             with tab1: st.info(result["analysis"])
             with tab2: st.success(result["questions"])
             with tab3: st.warning(result["skill_gap"])
-            with tab4: st.markdown(result["roadmap"])
+            with tab4: st.info(result["roadmap"])
     else:
         st.info(" Please upload a PDF resume document target file to initialize optimization analytics for you .")
 

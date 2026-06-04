@@ -7,20 +7,14 @@ import streamlit as st
 import pandas as pd
 from dotenv import load_dotenv
 
-# ==========================================
-# 1. CORE PAGE CONFIGURATION
-# ==========================================
 st.set_page_config(
-    page_title="AI Interview Coach Pro",
+    page_title="AI Interview Coach",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 load_dotenv()
 
-# ==========================================
-# 2. DATABASE ORCHESTRATION LAYER (SQLITE)
-# ==========================================
 DB_FILE = "data/interview_coach.db"
 
 def init_db():
@@ -60,9 +54,6 @@ def init_db():
 
 init_db()
 
-# ==========================================
-# 3. HELPER UTILITY FUNCTIONS
-# ==========================================
 def register_user(username, password):
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
@@ -111,17 +102,14 @@ def parse_numerical_score(feedback_text):
         return float(match_pct.group(1)) / 10.0
     return 7.0
 
-# ==========================================
-# 4. STREAMLIT APPLICATION INTERFACE PAGES
-# ==========================================
 
 def resume_analyzer_page():
-    st.markdown("#AI Resume Analyzer")
+    st.markdown("AI Resume Analyzer")
     st.markdown("Extract core skill structures, match requirements, and generate tailored training paths instantly.")
     st.markdown("---")
     
     with st.container(border=True):
-        st.markdown("###Upload Document Target")
+        st.markdown("###Upload Document")
         uploaded_file = st.file_uploader("Upload your CV or Resume in standard format", type=["pdf"], label_visibility="collapsed")
 
     if uploaded_file:
@@ -134,27 +122,27 @@ def resume_analyzer_page():
             st.write("Constructing internal buffer state tables...")
             status.update(label="Document Processed Successfully!", state="complete", expanded=False)
 
-        with st.expander("View Extracted Resume Characters Log"):
+        with st.expander("View Extracted Resume"):
             st.text(text)
 
-        st.markdown("###  Optimization Context")
+        st.markdown("###  Personalised Optimization ")
         with st.container(border=True):
-            target_role = st.text_input("Enter Target Role / Employment Field Target Profile:", value="Machine Learning Engineer")
+            target_role = st.text_input("Enter Target Role:", value="Machine Learning Engineer")
 
         if st.button("Generate Strategic Career Insights", type="primary"):
-            with st.spinner("Invoking Autonomous Multi-Agent Processing Graphs..."):
+            with st.spinner("Invoking Multi-Agent Processing Graphs..."):
                 result = app_graph.invoke({
                     "resume_text": text, "target_role": target_role,
                     "analysis": "", "questions": "", "skill_gap": "", "roadmap": ""
                 })
             
-            tab1, tab2, tab3, tab4 = st.tabs(["Profile Analysis", " Interview Pool Questions", "Missing Skill Tracks", "Strategic Roadmap"])
+            tab1, tab2, tab3, tab4 = st.tabs(["Profile Analysis", " Interview Questions", "Missing Skill", "Learning Roadmap"])
             with tab1: st.info(result["analysis"])
             with tab2: st.success(result["questions"])
             with tab3: st.warning(result["skill_gap"])
             with tab4: st.help(result["roadmap"])
     else:
-        st.info(" Please upload a PDF resume document target file to initialize optimization analytics loops.")
+        st.info(" Please upload a PDF resume document target file to initialize optimization analytics for you .")
 
 def dashboard_page():
     st.markdown("#  Analytics Dashboard")
@@ -162,7 +150,7 @@ def dashboard_page():
     st.markdown("---")
     df = get_user_history(st.session_state.username)
     if df.empty:
-        st.warning(" No practice history found for this account. Run an active Voice Mock Interview session to populate metrics loops.")
+        st.warning(" No practice history found for you. Run an active Voice Mock Interview session to check .")
         return
 
     with st.container(border=True):
@@ -176,7 +164,7 @@ def dashboard_page():
             unique_days = pd.to_datetime(df["timestamp"]).dt.date.nunique()
             st.metric("Total active practice sessions", unique_days)
 
-    st.markdown("###  Visual Metrics Progress Timelines")
+    st.markdown("###  Visual Progress Timelines")
     with st.container(border=True):
         chart_col1, chart_col2 = st.columns(2)
         with chart_col1:
@@ -186,28 +174,28 @@ def dashboard_page():
             st.line_chart(timeline_df["score"])
             
         with chart_col2:
-            st.markdown("**Metric Distribution Cluster Quantities:**")
+            st.markdown("**Metric Distribution:**")
             score_distribution = df["score"].value_counts().sort_index()
             st.bar_chart(score_distribution)
 
-    st.markdown("### Historic Verification Log Data Archive")
+    st.markdown("### Answered Questions")
     with st.container(border=True):
         st.dataframe(df, width="stretch")
 
 def voice_interview_page():
-    st.markdown("#  Mock Interview Panel")
-    st.markdown("Simulate interactive technical question tracking with real-time feedback processing metrics loops.")
+    st.markdown("#  Mock Interview ")
+    st.markdown("Simulate interactive technical question tracking with real-time feedback processing metrics personalised for you!.")
     st.markdown("---")
     
     from streamlit_mic_recorder import mic_recorder
 
     with st.container(border=True):
-        st.markdown("###  Set Session Baseline Context")
-        resume_text = st.text_area("Paste contextual requirements profile data text here:", height=120)
+        st.markdown("### Your mock interview :")
+        resume_text = st.text_area("Paste resume text here:", height=120)
 
     if st.button("Generate Interview Evaluation Queue", type="primary"):
         from agents.interview_agent import generate_questions
-        with st.spinner("Synthesizing custom simulation scripts..."):
+        with st.spinner("Synthesizing custom simulation questions..."):
             raw_questions = generate_questions(resume_text)
 
         questions = [line.strip() for line in raw_questions.split("\n") if len(line.strip()) > 5]
@@ -234,23 +222,23 @@ def voice_interview_page():
                         audio_file = generate_audio(question)
                     st.audio(audio_file)
 
-            st.markdown("####  Capture Live Voice Stream")
+            st.markdown("#### Record")
             audio = mic_recorder(
-                start_prompt=" Start Capture", 
-                stop_prompt=" Terminate Stream",
+                start_prompt=" Start", 
+                stop_prompt=" Stop",
                 just_once=True
             )
 
             if audio:
-                st.success(" Voice capture successfully saved to runtime buffer space!")
+                st.success(" Voice capture successfully ")
                 from agents.transcription_agent import transcribe_audio
                 from agents.evaluator_agent import evaluate_answer
                 
                 with open("temp_answer.wav", "wb") as f:
                     f.write(audio["bytes"])
                 
-                with st.status("Evaluating response attributes...", expanded=True) as feedback_status:
-                    st.write("Transcribing audio tracking matrix waveforms...")
+                with st.status("Evaluating response ...", expanded=True) as feedback_status:
+                    st.write("Transcribing audio...")
                     answer = transcribe_audio("temp_answer.wav")
                     
                     st.write("Processing language modeling evaluation patterns...")
@@ -258,10 +246,10 @@ def voice_interview_page():
                     feedback_status.update(label="Evaluation Calculations Finished!", state="complete", expanded=False)
                     
                 with st.container(border=True):
-                    st.markdown("Your Transcription Log Output:")
+                    st.markdown("Your Transcription:")
                     st.write(answer)
                     st.markdown("---")
-                    st.markdown("AI Response Feedback Assessment Metric Output:")
+                    st.markdown("AI Response Feedback Assessment :")
                     st.write(feedback)
                     
                 computed_score = parse_numerical_score(feedback)
@@ -276,11 +264,7 @@ def voice_interview_page():
                 st.session_state.current_question += 1
                 st.rerun()
         else:
-            st.success(" Simulation Ended! Open your Performance Dashboard to view visual metric plots.")
-
-# ==========================================
-# 5. CORE ROUTING INFRASTRUCTURE & SECURITY
-# ==========================================
+            st.success(" Simulation Ended! Open your Performance Dashboard to view .")
 
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
@@ -288,46 +272,51 @@ if "username" not in st.session_state:
     st.session_state.username = None
 
 if not st.session_state.authenticated:
-    st.title(" Secure Gateway Portal — AI Interview Coach")
+    st.title("🔐 Secure Gateway Portal — AI Interview Coach")
+    
     with st.container(border=True):
         auth_mode = st.radio("Access Selection Mode", ["Login Existing Profile", "Create New Identity Account"], horizontal=True)
+        
         form_col1, form_col2 = st.columns(2)
         with form_col1:
             user_input = st.text_input("Username Identification String").strip()
             pass_input = st.text_input("Security Access Password", type="password").strip()
             
-        if auth_mode == "Login Existing Profile":
-            if st.button("Unlock Dashboard Portal", type="primary"):
-                if check_login(user_input, pass_input):
-                    st.session_state.authenticated = True
-                    st.session_state.username = user_input
-                    st.success(f"Access granted. Welcome back {user_input}!")
-                    st.rerun()
-                else:
-                    st.error(" Identification mismatch verification error. Check username or password.")
-        else:
-            if st.button("Provision New Account Assets", type="primary"):
-                if user_input == "" or pass_input == "":
-                    st.warning(" Parameter definitions can not contain empty space entities.")
-                else:
-                    register_user(user_input, pass_input)
-                    st.success(" Identity provisioning sequence succeeded! Select 'Login Existing Profile' above to connect.")
+            if auth_mode == "Login Existing Profile":
+                if st.button("Unlock Dashboard Portal", type="primary"):
+                    if check_login(user_input, pass_input):
+                        st.session_state.authenticated = True
+                        st.session_state.username = user_input
+                        st.success(f"Access granted. Welcome back {user_input}!")
+                        st.rerun()
+                    else:
+                        st.error("❌ Identification mismatch validation verification error. Check username or password.")
+            else:
+                if st.button("Provision New Account Assets", type="primary"):
+                    if user_input == "" or pass_input == "":
+                        st.warning("⚠️ Parameter definitions can not contain empty space entities.")
+                    else:
+                        register_user(user_input, pass_input)
+                        st.success("🎉 Identity provisioning sequence succeeded! Select 'Login Existing Profile' above to connect.")
 else:
     with st.sidebar:
-        st.markdown(f"###  Profile: {st.session_state.username}")
-        if st.button(" Log out of Session", use_container_width=True):
+        st.markdown(f"### 👤 Profile: **{st.session_state.username}**")
+        if st.button("🔒 Log out of Session", use_container_width=True):
             st.session_state.authenticated = False
             st.session_state.username = None
             st.rerun()
         st.markdown("---")
-        
-    pg = st.navigation({
-        "System Utilities Workspace": [
-            st.Page(page=resume_analyzer_page, title="Resume Analyzer", default=True),
-            st.Page(page=dashboard_page, title="Performance Dashboard"),
-            st.Page(page=voice_interview_page, title="Voice Mock Interview Panel"),
-        ]
-    }, position="sidebar")
+
+    # FIX: Explicitly pass list directly into dictionary to avoid 'pages' variable name collisions
+    pg = st.navigation(
+        {
+            "System Utilities Workspace": [
+                st.Page(page=resume_analyzer_page, title="Resume Analyzer", icon="🤖", default=True),
+                st.Page(page=dashboard_page, title="Performance Dashboard", icon="📊"),
+                st.Page(page=voice_interview_page, title="Voice Mock Interview Panel", icon="🎙️"),
+            ]
+        }, 
+        position="sidebar"
+    )
+
     pg.run()
-
-
